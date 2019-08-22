@@ -1,1 +1,8 @@
 language: java
+deploy:
+  provider: releases
+  api_key: 
+    secure: "k+MxnTekcN+wKw0fsCIPOO0QBOz79l2u5ZmDISx6EntuAfWhImeOQwJfDqJtdsCgFeQorUmIK+fYx+MnqK++QZ225PWSBb1odDR2N3Oa64mgTA1csOXbb/NFSTbJlZHFzU9sAzozoIg8FPIodRXWYRi6Zt8fbzAHJva4Q18/79gmptTZQfhg4K+QTCj4MQlH/IQDXPwQ2gc3v8ILrJ8kE8wOdhrbjCS2WzfYW7AufZ3DaNg5VnryKzb3FrPwL8LH6cU2yKi6XM46rIFE3bk8+twdZXI0fm5cbtN6YZo296R9cXGNdtqvz6FGFjUM/M0iP/VsDYPhV8wt3joGb5Bjc9Fw0puAkhWSD/h9lHeLCJkhh97bC5jIuEo7UVrgyEldSaAGH77W718bD91N+CHsI7C87AC8/dml29ROwBFiAoHX0+XFmsup9UTK59hzhEF+eUZ4HP4hGnifguVzpRxEtPsl7/E/9p0j8QKJ00TOfp9+Gp8ZNebfCp6r9jCSvrFGihKeahrUe+zfCB6DnryEzgOexx4AzKOVKwU7VmWWvy/F8V78J4L7Ls20ilL3XeJh6HKInBcQ/Jw/lmVWcExkFYdYk6Qz73kkdFQWoTyJm4CIzTbYf9BSWWjnvdAp+VDpFdCbuo3t7ct6U4Q/fHFElhYzK3fj8sIiUleXiX0ksDo="
+  file: "build/libs/bss2css.jar"
+  skip_cleanup: true
+  draft: true
