@@ -14,14 +14,8 @@ import com.sun.javafx.css.converters.PaintConverter;
 import com.sun.javafx.css.converters.SizeConverter;
 import com.sun.javafx.css.converters.StringConverter;
 import com.sun.javafx.css.converters.URLConverter;
-import com.sun.javafx.scene.layout.region.BorderStyleConverter;
-import com.sun.javafx.scene.layout.region.CornerRadiiConverter;
-import com.sun.javafx.scene.layout.region.LayeredBackgroundPositionConverter;
-import com.sun.javafx.scene.layout.region.LayeredBackgroundSizeConverter;
-import com.sun.javafx.scene.layout.region.LayeredBorderPaintConverter;
-import com.sun.javafx.scene.layout.region.LayeredBorderStyleConverter;
-import com.sun.javafx.scene.layout.region.Margins;
-import com.sun.javafx.scene.layout.region.RepeatStructConverter;
+import com.sun.javafx.scene.layout.region.*;
+
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -48,7 +42,7 @@ public class Main {
     private static final DecimalFormat DF4 = new DecimalFormat("#.####");
 
     @FunctionalInterface
-    private static interface SingleConverter {
+    private interface SingleConverter {
 
         void process(StringBuilder cssStringBuilder, ParsedValue parsedValue, StyleConverter converter, Object value);
     }
@@ -424,23 +418,59 @@ public class Main {
                 }
             }
         });
+        CONVERTERS.put(SizeConverter.SequenceConverter.class, ((cssStringBuilder, parsedValue, converter, value) -> {
+            ParsedValue[] values = (ParsedValue[]) value;
+            if (values.length == 0) {
+                cssStringBuilder.append("null");
+            }
+            for (int i = 0; i < values.length; i++) {
+                if (values[i].getConverter() == null) {
+                    appendValue(cssStringBuilder, values[i].getValue());
+                } else {
+                    throw new RuntimeException(String.format("Converter '%s' not found", values[i].getConverter().getClass()));
+                }
+                if (i != values.length - 1) {
+                    cssStringBuilder.append(" ");
+                }
+            }
+        }));
+        CONVERTERS.put(SliceSequenceConverter.class, (cssStringBuilder, parsedValue, converter, value) -> {
+            if (!(value instanceof ParsedValue[])) {
+                appendValue(cssStringBuilder, ((ParsedValue) value).getValue());
+                return;
+            }
+            ParsedValue[] sliceArrays = (ParsedValue[]) value;
+            for (int i = 0; i < sliceArrays.length; i++) {
+                ParsedValue[] slices = (ParsedValue[]) sliceArrays[i].getValue();
+                for (int j = 0; j < slices.length; j++) {
+                    appendValue(cssStringBuilder, slices[0]);
+                    if (j != slices.length - 1) {
+                        cssStringBuilder.append(" ");
+                    }
+                }
+                if (i != sliceArrays.length - 1) {
+                    cssStringBuilder.append(", ");
+                }
+            }
+        });
     }
 
     static {
         try {
-            Class namedColorsClass = Color.class.getClassLoader().loadClass(Color.class.getName() + "$NamedColors");
+            Class<?> namedColorsClass = Color.class.getClassLoader().loadClass(Color.class.getName() + "$NamedColors");
             Field namedColorsField = namedColorsClass.getDeclaredField("namedColors");
             namedColorsField.setAccessible(true);
-            PREDEFINED_COLORS = ((Map<String, Color>) namedColorsField.get(null)).entrySet().stream().collect(Collectors.toMap(x -> x.getValue(), x -> x.getKey(), (x, a) -> x));
-        } catch (ReflectiveOperationException e) {
+            //noinspection unchecked
+            PREDEFINED_COLORS = ((Map<String, Color>) namedColorsField.get(null)).entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (x, a) -> x));
+        } catch (ReflectiveOperationException ignored) {
         }
 
         registerConverters();
     }
 
     private static void appendSimpleSelector(StringBuilder cssStringBuilder, SimpleSelector selector) {
-        String name = ((SimpleSelector) selector).getName();
-        String id = ((SimpleSelector) selector).getId();
+        String name = selector.getName();
+        String id = selector.getId();
         if (name == null || name.equals("*")) {
             name = "";
         }
