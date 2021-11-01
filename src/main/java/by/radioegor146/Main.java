@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import javafx.css.ParsedValue;
 import javafx.css.StyleConverter;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -439,16 +440,20 @@ public class Main {
                 appendValue(cssStringBuilder, ((ParsedValue) value).getValue());
                 return;
             }
-            ParsedValue[] sliceArrays = (ParsedValue[]) value;
-            for (int i = 0; i < sliceArrays.length; i++) {
-                ParsedValue[] slices = (ParsedValue[]) sliceArrays[i].getValue();
-                for (int j = 0; j < slices.length; j++) {
-                    appendValue(cssStringBuilder, slices[0]);
-                    if (j != slices.length - 1) {
+            ParsedValue[] layers = (ParsedValue[]) value;
+            for (int i = 0; i < layers.length; i++) {
+                ParsedValue[] layer = (ParsedValue[]) layers[i].getValue();
+                ParsedValue[] insets = (ParsedValue[]) layer[0].getValue();
+                for (int k = 0; k < insets.length; k++) {
+                    appendValue(cssStringBuilder, insets[k].getValue());
+                    if (k != insets.length - 1) {
                         cssStringBuilder.append(" ");
                     }
                 }
-                if (i != sliceArrays.length - 1) {
+                if ((Boolean) layer[1].getValue()) {
+                    cssStringBuilder.append(" fill");
+                }
+                if (i != layers.length - 1) {
                     cssStringBuilder.append(", ");
                 }
             }
